@@ -46,3 +46,9 @@ table th, table td {
 table th {
   background: #f4f4f4;
 }
+
+table span {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
