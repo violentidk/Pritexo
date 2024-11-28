@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tootekataloog</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Tootekataloog</h1>
+  </header>
+  <main>
+    <!-- Vorm andmete lisamiseks -->
+    <section id="addProductSection">
+      <h2>Lisa uus toode</h2>
+      <form id="addProductForm">
+        <label>
+          Toote nimi:
+          <input type="text" id="productName" required>
+        </label>
+        <label>
+          Kategooria:
+          <input type="text" id="productCategory" required>
+        </label>
+        <label>
+          Hinnad (nt: Coop:1.99,Selver:2.99):
+          <input type="text" id="productPrices">
+        </label>
+        <button type="submit">Lisa</button>
+      </form>
+    </section>
+
+    <!-- Tabel toodete kuvamiseks -->
+    <section>
+      <h2>Toote nimekiri</h2>
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Toote Nimi</th>
+            <th>Kategooria</th>
+            <th>Hinnad</th>
+            <th>Viimati Uuendatud</th>
+            <th>Tegevused</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Tooted lisatakse siia JavaScripti abil -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
