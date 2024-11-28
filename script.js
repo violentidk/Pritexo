@@ -41,11 +41,14 @@ function updateProductTable() {
   productData.forEach((product, index) => {
     const row = document.createElement("tr");
 
+    // Leia kõige soodsam hind ja vastav pood
+    const { cheapestStore, cheapestPrice } = findCheapestPrice(product.prices);
+
     // Loome tabelirea
     row.innerHTML = `
       <td>${product.name}</td>
       <td>${product.category}</td>
-      <td>${formatPrices(product.prices)}</td>
+      <td>${formatPricesWithHighlight(product.prices, cheapestStore, cheapestPrice)}</td>
       <td>${product.lastUpdated}</td>
       <td>
         <button onclick="editProduct(${index})">Muuda</button>
@@ -57,11 +60,31 @@ function updateProductTable() {
   });
 }
 
-// Hindade formaatimine
-function formatPrices(prices) {
+// Hindade formaatimine koos esiletõstmisega
+function formatPricesWithHighlight(prices, cheapestStore, cheapestPrice) {
   return Object.entries(prices)
-    .map(([store, price]) => `${store}: €${price.toFixed(2)}`)
+    .map(([store, price]) => {
+      const isCheapest = store === cheapestStore && price === cheapestPrice;
+      return `<span style="background-color: ${isCheapest ? 'lightgreen' : 'transparent'}">${store}: €${price.toFixed(
+        2
+      )}</span>`;
+    })
     .join(", ");
+}
+
+// Leia kõige odavam hind ja pood
+function findCheapestPrice(prices) {
+  let cheapestStore = null;
+  let cheapestPrice = Infinity;
+
+  for (const [store, price] of Object.entries(prices)) {
+    if (price < cheapestPrice) {
+      cheapestPrice = price;
+      cheapestStore = store;
+    }
+  }
+
+  return { cheapestStore, cheapestPrice };
 }
 
 // Toote muutmine
