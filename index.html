@@ -10,8 +10,9 @@
   <header>
     <h1>Tootekataloog</h1>
   </header>
+
   <main>
-    <!-- Vorm andmete lisamiseks -->
+    <!-- Vorm toote lisamiseks -->
     <section id="addProductSection">
       <h2>Lisa uus toode</h2>
       <form id="addProductForm">
@@ -25,7 +26,7 @@
         </label>
         <label>
           Hinnad (nt: Coop:1.99,Selver:2.99):
-          <input type="text" id="productPrices">
+          <input type="text" id="productPrices" required>
         </label>
         <button type="submit">Lisa</button>
       </form>
@@ -41,15 +42,70 @@
             <th>Kategooria</th>
             <th>Hinnad</th>
             <th>Viimati Uuendatud</th>
-            <th>Tegevused</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Tooted lisatakse siia JavaScripti abil -->
+          <!-- Tooted lisatakse siia Firebase'ist -->
         </tbody>
       </table>
     </section>
   </main>
-  <script src="script.js"></script>
+
+  <script>
+    // Firebase'i ühendamine
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Toote lisamise vormi haldamine
+    const form = document.getElementById('addProductForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const productName = document.getElementById('productName').value;
+      const productCategory = document.getElementById('productCategory').value;
+      const productPrices = document.getElementById('productPrices').value;
+
+      await db.collection('products').add({
+        name: productName,
+        category: productCategory,
+        prices: productPrices,
+        lastUpdated: new Date().toLocaleString()
+      });
+
+      form.reset();
+      loadProducts(); // Uuenda toote nimekiri
+    });
+
+    // Andmete laadimine Firestore'ist
+    async function loadProducts() {
+      const snapshot = await db.collection('products').get();
+      const products = snapshot.docs.map(doc => doc.data());
+      const tableBody = document.querySelector("#productTable tbody");
+      tableBody.innerHTML = "";
+
+      products.forEach(product => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${product.name}</td>
+          <td>${product.category}</td>
+          <td>${product.prices}</td>
+          <td>${product.lastUpdated}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Lae tooted esialgu
+    loadProducts();
+  </script>
 </body>
 </html>
