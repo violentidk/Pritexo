@@ -1,131 +1,92 @@
-let productData = [
-  {
-    name: "Kodune hakkliha 500 g MAKS & MOORITS",
-    category: "Liha-ja kalatooted",
-    prices: { Rimi: 2.99, Coop: 3.55, Selver: 3.55, Prisma: 3.55 },
-    lastUpdated: "2024-11-28"
-  },
-  {
-    name: "Seahakkliha 500 g MAKS & MOORITS",
-    category: "Liha-ja kalatooted",
-    prices: { Rimi: 3.49, Selver: 2.89, Prisma: 3.19 },
-    lastUpdated: "2024-11-28"
-  }
-];
+// Tooteandmete hoidmine
+const productData = [];
 
-// Tabeli täitmine
-function populateTable() {
-  const tableBody = document.querySelector("#productTable tbody");
-  tableBody.innerHTML = ""; // Tühjenda enne täitmist
+// Vorm andmete lisamiseks
+const addProductForm = document.getElementById("addProductForm");
+const productTableBody = document.querySelector("#productTable tbody");
+
+// Uue toote lisamine
+addProductForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("productName").value.trim();
+  const category = document.getElementById("productCategory").value.trim();
+  const pricesInput = document.getElementById("productPrices").value.trim();
+  const lastUpdated = new Date().toISOString().split("T")[0];
+
+  // Töötleme hinnad (string -> objekt)
+  const prices = pricesInput
+    .split(",")
+    .reduce((acc, curr) => {
+      const [store, price] = curr.split(":");
+      if (store && price) {
+        acc[store.trim()] = parseFloat(price.trim());
+      }
+      return acc;
+    }, {});
+
+  // Lisame uue toote andmed
+  const newProduct = { name, category, prices, lastUpdated };
+  productData.push(newProduct);
+
+  // Uuenda tabelit
+  updateProductTable();
+  addProductForm.reset();
+});
+
+// Toote tabeli värskendamine
+function updateProductTable() {
+  productTableBody.innerHTML = "";
 
   productData.forEach((product, index) => {
     const row = document.createElement("tr");
 
-    // Toote nimi
-    const nameCell = document.createElement("td");
-    nameCell.textContent = product.name;
-    row.appendChild(nameCell);
+    // Loome tabelirea
+    row.innerHTML = `
+      <td>${product.name}</td>
+      <td>${product.category}</td>
+      <td>${formatPrices(product.prices)}</td>
+      <td>${product.lastUpdated}</td>
+      <td>
+        <button onclick="editProduct(${index})">Muuda</button>
+        <button onclick="deleteProduct(${index})">Kustuta</button>
+      </td>
+    `;
 
-    // Kategooria
-    const categoryCell = document.createElement("td");
-    categoryCell.textContent = product.category;
-    row.appendChild(categoryCell);
-
-    // Hinnad
-    const pricesCell = document.createElement("td");
-    pricesCell.innerHTML = Object.entries(product.prices)
-      .map(([store, price]) => `<strong>${store}:</strong> €${price}`)
-      .join("<br>");
-    row.appendChild(pricesCell);
-
-    // Viimati uuendatud
-    const lastUpdatedCell = document.createElement("td");
-    lastUpdatedCell.textContent = product.lastUpdated;
-    row.appendChild(lastUpdatedCell);
-
-    // Tegevuste nupud
-    const actionsCell = document.createElement("td");
-
-    // Muuda nupp
-    const editButton = document.createElement("button");
-    editButton.textContent = "Muuda";
-    editButton.onclick = () => editProduct(index);
-    actionsCell.appendChild(editButton);
-
-    // Kustuta nupp
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Kustuta";
-    deleteButton.onclick = () => deleteProduct(index);
-    actionsCell.appendChild(deleteButton);
-
-    row.appendChild(actionsCell);
-
-    tableBody.appendChild(row);
+    productTableBody.appendChild(row);
   });
 }
 
-// Toote lisamine
-document.querySelector("#addProductForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const name = document.querySelector("#productName").value.trim();
-  const category = document.querySelector("#productCategory").value.trim();
-  const pricesInput = document.querySelector("#productPrices").value.trim();
-  const prices = {};
-
-  if (pricesInput) {
-    pricesInput.split(",").forEach(pair => {
-      const [store, price] = pair.split(":");
-      if (store && price) {
-        prices[store.trim()] = parseFloat(price.trim());
-      }
-    });
-  }
-
-  productData.push({
-    name,
-    category,
-    prices,
-    lastUpdated: new Date().toISOString().split("T")[0]
-  });
-
-  populateTable();
-  e.target.reset(); // Tühjenda vorm
-});
+// Hindade formaatimine
+function formatPrices(prices) {
+  return Object.entries(prices)
+    .map(([store, price]) => `${store}: €${price.toFixed(2)}`)
+    .join(", ");
+}
 
 // Toote muutmine
 function editProduct(index) {
   const product = productData[index];
-  const name = prompt("Sisesta uus nimi:", product.name);
-  const category = prompt("Sisesta uus kategooria:", product.category);
-  const prices = prompt("Sisesta uued hinnad (nt Coop:1.99,Selver:2.99):");
 
-  if (name) product.name = name;
-  if (category) product.category = category;
-  if (prices) {
-    const pricesObj = {};
-    prices.split(",").forEach(pair => {
-      const [store, price] = pair.split(":");
-      if (store && price) {
-        pricesObj[store.trim()] = parseFloat(price.trim());
-      }
-    });
-    product.prices = pricesObj;
-  }
-  product.lastUpdated = new Date().toISOString().split("T")[0];
-  populateTable();
+  // Täida vorm eelnevate andmetega
+  document.getElementById("productName").value = product.name;
+  document.getElementById("productCategory").value = product.category;
+  document.getElementById("productPrices").value = Object.entries(product.prices)
+    .map(([store, price]) => `${store}:${price}`)
+    .join(",");
+
+  // Toote eemaldamine muutmiseks
+  productData.splice(index, 1);
+  updateProductTable();
 }
 
-// Toote kustutamine (küsib koodi)
+// Toote kustutamine (koodiga 2009)
 function deleteProduct(index) {
-  const code = prompt("Kustutamiseks sisesta kood:");
+  const code = prompt("Sisesta kood toodete kustutamiseks:");
   if (code === "2009") {
     productData.splice(index, 1);
-    populateTable();
+    updateProductTable();
   } else {
-    alert("Vale kood!");
+    alert("Vale kood! Toote kustutamine katkestatud.");
   }
 }
-
-// Esialgne tabeli täitmine
-populateTable();
